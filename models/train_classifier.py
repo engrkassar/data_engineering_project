@@ -45,7 +45,7 @@ def load_data(database_filepath):
     df.dropna(inplace=True)
     X = df.iloc[:,2].values
     y = df.iloc[:,4:].values
-    with open('category_names.pkl', 'rb') as f:
+    with open('../data/category_names.pkl', 'rb') as f:
         category_names = pickle.load(f)
     return X, y, category_names
 
@@ -101,7 +101,7 @@ def evaluate_model(model, X_test, y_test, category_names):
     y_pred = model.predict(X_test)
     accuracy = (y_pred == y_test).mean()
 
-    print("Labels:", labels)
+    print("Labels:", y_pred)
     print("Accuracy:", accuracy)
     return
 
