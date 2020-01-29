@@ -18,6 +18,8 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sqlalchemy import create_engine
+import pickle
+
 
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
@@ -27,13 +29,13 @@ def load_data(messages_filepath, categories_filepath):
     categories = df['categories'].str.split(';',expand=True)
 
 
-    category_names = df.iloc[0]['categories'].str.split(';',expand=True)
-    for i, j in enumerate(category_colnames):
-       category_names[i] = category_names[i][0:-2]
+    category_names = df.iloc[0]['categories'].split(';')
+    for i, j in enumerate(category_names):
+       category_names[i] = category_names[i].split('-')[0]
     
     with open('category_names.pkl', 'wb') as f:
        pickle.dump(category_names, f)
-
+    print(category_names)
     return df
 
 
