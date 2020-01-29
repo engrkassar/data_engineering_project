@@ -39,8 +39,9 @@ def model_input():
 
 
 def load_data(database_filepath):
-    engine_read = create_engine(database_filepath)
-    df = pd.read_sql("SELECT * FROM Cleaned_Data_1_df", engine_read)
+    engine_path = 'sqlite:///' + database_filepath
+    engine_read = create_engine(engine_path)
+    df = pd.read_sql("SELECT * FROM data", engine_read)
     df.dropna(inplace=True)
     X = df.iloc[:,2].values
     y = df.iloc[:,4:].values
