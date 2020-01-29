@@ -4,6 +4,8 @@ import sys
 import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
+import argparse
+
 import re
 import numpy as np
 import pandas as pd
@@ -23,8 +25,21 @@ import pickle
 from sqlalchemy import create_engine
 
 
+
+def model_input():
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('database_filepath', action="store", default='../data/DisasterResponse.db', type=str)
+    parser.add_argument('model_filepath', action="store", default='classifier.pkl', type=str)
+    
+    results = parser.parse_args()
+
+    return results
+
+
 def load_data(database_filepath):
-    engine_read = create_engine('sqlite:///Cleaned_Data_1.db')
+    engine_read = create_engine(database_filepath)
     df = pd.read_sql("SELECT * FROM Cleaned_Data_1_df", engine_read)
     df.dropna(inplace=True)
     X = df.iloc[:,2].values
@@ -100,7 +115,9 @@ def save_model(model, model_filepath):
     return
 
 def main():
-  
+    model_input()
+    model_input().database_filepath
+    model_input().model_filepath
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
