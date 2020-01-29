@@ -24,6 +24,7 @@ import pickle
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
+
     df = messages.join(categories.set_index('id'), on='id')	
     
     categories = df['categories'].str.split(';',expand=True)
@@ -32,27 +33,30 @@ def load_data(messages_filepath, categories_filepath):
     category_names = df.iloc[0]['categories'].split(';')
     for i, j in enumerate(category_names):
        category_names[i] = category_names[i].split('-')[0]
-    
-    with open('category_names.pkl', 'wb') as f:
-       pickle.dump(category_names, f)
-    print(category_names)
-    return df
-
-
-def clean_data(df):
-    with open('category_names.pkl', 'rb') as f:
-        category_names = pickle.load(f)
     categories.columns = category_names
-    df = messages.join(categories.set_index('id'), on='id')
     for column in categories:
         # set each value to be the last character of the string
         categories[column] = categories[column].str.get(-1)
 
         # convert column from string to numeric
         categories[column] = pd.to_numeric(categories[column])
+    df = df.join(categories, on='id')
+    with open('category_names.pkl', 'wb') as f:
+       pickle.dump(category_names, f)
+    print(category_names)
+    print(df)
+    print(categories)
+
+    return df
+
+
+def clean_data(df):
+    with open('category_names.pkl', 'rb') as f:
+        category_names = pickle.load(f)
+
 
     df.drop(['categories'], axis=1, inplace=True)
-    df = df.join(categories, on='id')
+
     df = df[df.duplicated()==False]
 
 
@@ -60,7 +64,7 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
-    engine_path = 'sqlite:///' + database_filepath
+    engine_path = 'sqlite:///' + database_filename
     engine_write = create_engine(engine_path)
     df.to_sql('data', engine_write, index=False)
     return  
