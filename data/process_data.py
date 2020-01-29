@@ -22,7 +22,19 @@ from sqlalchemy import create_engine
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
-    return
+    df = messages.join(categories.set_index('id'), on='id')	
+    
+    categories = df['categories'].str.split(';',expand=True)
+
+
+    category_names = df.iloc[0]['categories'].str.split(';',expand=True)
+    for i, j in enumerate(category_colnames):
+       category_names[i] = category_names[i][0:-2]
+    
+    with open('category_names.pkl', 'wb') as f:
+       pickle.dump(category_names, f)
+
+    return df
 
 
 def clean_data(df):
@@ -46,8 +58,9 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
-    engine_write = create_engine('sqlite:///database_filename.db')
-    df.to_sql('database_filename', engine_write, index=False)
+    engine_path = 'sqlite:///' + database_filepath
+    engine_write = create_engine(engine_path)
+    df.to_sql('data', engine_write, index=False)
     return  
 
 
