@@ -70,6 +70,27 @@ def tokenize(text):
     return clean_tokens
 
 
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+class StartingVerbExtractor(BaseEstimator, TransformerMixin):
+
+    def starting_verb(self, text):
+        sentence_list = nltk.sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            first_word, first_tag = pos_tags[0]
+            if first_tag in ['VB', 'VBP'] or first_word == 'RT':
+                return True
+        return False
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, X):
+        X_tagged = pd.Series(X).apply(self.starting_verb)
+        return pd.DataFrame(X_tagged)
+
+    
 def build_model():
     
     pipeline = Pipeline([
@@ -83,21 +104,22 @@ def build_model():
             ('starting_verb', StartingVerbExtractor())
         ])),
 
-        ('clf', MultiOutputClassifier(AdaBoostClassifier()))
+        ('clf', MultiOutputClassifier(GaussianNB()))
     ])
     
-    
+
     parameters = {
        
         'features__text_pipeline__vect__ngram_range': [(1, 1), (1, 2)],
         'features__text_pipeline__tfidf__use_idf': (True, False),
-        'clf__n_estimators':[20, 50, 70]
+        'clf__n_jobs': [1, 5, 10]
 
     }
 
     model = GridSearchCV(pipeline, param_grid=parameters)
 
     return model
+
 
 
 def evaluate_model(model, X_test, y_test, category_names):
