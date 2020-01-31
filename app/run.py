@@ -46,9 +46,9 @@ def index():
     with open('../data/category_names.pkl', 'rb') as f:
         category_names = pickle.load(f)
     category_counts = []
-
-
-    
+    for i, j in enumerate(category_names):
+        category_counts.append(int(df[j].sum()))
+     
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -74,13 +74,13 @@ def index():
         {
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    x=category_names,
+                    y=category_counts
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Distribution of Message Categories',
                 'yaxis': {
                     'title': "Count"
                 },
