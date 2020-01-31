@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-
+from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -100,9 +100,8 @@ def evaluate_model(model, X_test, y_test, category_names):
 
     y_pred = model.predict(X_test)
     accuracy = (y_pred == y_test).mean()
-
-    print("Labels:", y_pred)
     print("Accuracy:", accuracy)
+    print(classification_report(y_test[:,1:], y_pred[:,1:], target_names=labels))
     return
 
 
