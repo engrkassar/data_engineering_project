@@ -71,6 +71,7 @@ def tokenize(text):
 
 
 def build_model():
+    
     pipeline = Pipeline([
         ('features', FeatureUnion([
 
@@ -78,22 +79,25 @@ def build_model():
                 ('vect', CountVectorizer(tokenizer=tokenize)),
                 ('tfidf', TfidfTransformer())
             ])),
+
+            ('starting_verb', StartingVerbExtractor())
         ])),
 
-        ('clf', MultiOutputClassifier(MultinomialNB()))
+        ('clf', MultiOutputClassifier(AdaBoostClassifier()))
     ])
-
+    
+    
     parameters = {
        
         'features__text_pipeline__vect__ngram_range': [(1, 1), (1, 2)],
         'features__text_pipeline__tfidf__use_idf': (True, False),
-        'clf__n_jobs': [1, 5],
+        'clf__n_estimators':[20, 50, 70]
 
     }
 
+    model = GridSearchCV(pipeline, param_grid=parameters)
 
-    return pipeline
-
+    return model
 
 
 def evaluate_model(model, X_test, y_test, category_names):
