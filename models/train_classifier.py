@@ -20,9 +20,14 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.naive_bayes import MultinomialNB
 import pickle
 from sqlalchemy import create_engine
+
+# import libraries
+import nltk
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+
+
 
 
 
