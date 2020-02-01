@@ -20,14 +20,9 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
+from sklearn.naive_bayes import MultinomialNB
 import pickle
 from sqlalchemy import create_engine
-
-# import libraries
-import nltk
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
-
-
 
 
 
@@ -119,7 +114,7 @@ def build_model():
 
 
 
-def evaluate_model(y_test, y_pred, category_names):
+def evaluate_model(model,X_test, y_test, category_names):
     """
     Runs the trained model to make predctions on test set
     then calculates precision, recall, f1-score of model scored on that set
@@ -140,7 +135,7 @@ def evaluate_model(y_test, y_pred, category_names):
         print('')
         print('')
         print('')
-
+    return
 
 
 def save_model(model, model_filepath):
@@ -169,7 +164,7 @@ def main():
         model.fit(X_train, Y_train)
         
         print('Evaluating model...')
-        evaluate_model(X_test, Y_test, category_names)
+        evaluate_model(model,X_test, Y_test, category_namess)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
