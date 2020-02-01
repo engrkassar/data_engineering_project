@@ -14,12 +14,13 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.naive_bayes import MultinomialNB
 import pickle
 from sqlalchemy import create_engine
 
@@ -68,8 +69,6 @@ def tokenize(text):
 
     return clean_tokens
 
-
-
 class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
     def starting_verb(self, text):
@@ -88,9 +87,7 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         X_tagged = pd.Series(X).apply(self.starting_verb)
         return pd.DataFrame(X_tagged)
 
-    
 def build_model():
-    
     pipeline = Pipeline([
         ('features', FeatureUnion([
 
@@ -102,16 +99,13 @@ def build_model():
             ('starting_verb', StartingVerbExtractor())
         ])),
 
-        ('clf', MultiOutputClassifier(AdaBoostClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        
     ])
-    
 
     parameters = {
-       
-        'features__text_pipeline__vect__ngram_range': [(1, 1), (1, 2)],
+        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
         'features__text_pipeline__tfidf__use_idf': (True, False),
-        'clf__n_jobs': [1, 5, 10]
-
     }
 
     model = GridSearchCV(pipeline, param_grid=parameters)
@@ -120,13 +114,28 @@ def build_model():
 
 
 
-def evaluate_model(model, X_test, y_test, category_names):
-
+def evaluate_model(y_test, y_pred, category_names):
+    """
+    Runs the trained model to make predctions on test set
+    then calculates precision, recall, f1-score of model scored on that set
+    """    
     y_pred = model.predict(X_test)
-    accuracy = (y_pred == y_test).mean()
-    print("Accuracy:", accuracy)
-    print(classification_report(y_test[:,1:], y_pred[:,1:], target_names=labels))
-    return
+    accuracy = (y_test == y_pred).mean()
+    print("Model Accuracy:", accuracy)
+    print('')
+    print("Classification Reports:")
+    print('')
+    print('')
+    for i, j in enumerate(category_names):
+        print('_______________________________________________')
+        print('classification report for', j, 'category is: ')
+        print('_______________________________________________')
+        print(classification_report(y_test[:,i], y_pred[:,i]))
+        print('_______________________________________________')
+        print('')
+        print('')
+        print('')
+
 
 
 def save_model(model, model_filepath):
@@ -155,7 +164,7 @@ def main():
         model.fit(X_train, Y_train)
         
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
