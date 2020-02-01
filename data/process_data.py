@@ -22,27 +22,38 @@ import pickle
 
 
 def load_data(messages_filepath, categories_filepath):
+
+    # Reads messages and categories data, then do some processing then returns dataframe for further cleaning.
+
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
 
     df = messages.join(categories.set_index('id'), on='id')	
-    
+
+    # getting category names.
+
     categories = df['categories'].str.split(';',expand=True)
 
 
     category_names = df.iloc[0]['categories'].split(';')
+    
     for i, j in enumerate(category_names):
        category_names[i] = category_names[i].split('-')[0]
+
     categories.columns = category_names
+    
     for column in categories:
         # set each value to be the last character of the string
         categories[column] = categories[column].str.get(-1)
 
         # convert column from string to numeric
         categories[column] = pd.to_numeric(categories[column])
+        
     df = df.join(categories, on='id')
+    
     with open('category_names.pkl', 'wb') as f:
        pickle.dump(category_names, f)
+    
     print(category_names)
     print(df)
     print(categories)
@@ -51,26 +62,33 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    
     with open('category_names.pkl', 'rb') as f:
         category_names = pickle.load(f)
-
 
     df.drop(['categories'], axis=1, inplace=True)
 
     df = df[df.duplicated()==False]
 
-
     return df
 
 
 def save_data(df, database_filename):
+    
+   # Saves the dataframe to SQLite Database.
+
+    
     engine_path = 'sqlite:///' + database_filename
+    
     engine_write = create_engine(engine_path)
+    
     df.to_sql('data', engine_write, index=False)
+    
     return  
 
 
 def main():
+    
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
