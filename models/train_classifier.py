@@ -27,7 +27,9 @@ from sqlalchemy import create_engine
 
 
 def model_input():
-
+    
+    # Takes command line inputs: database and model file paths, and returns them for use in other parts of the program.
+    
     parser = argparse.ArgumentParser()
 
     parser.add_argument('database_filepath', action="store", default='../data/DisasterResponse.db', type=str)
@@ -39,6 +41,9 @@ def model_input():
 
 
 def load_data(database_filepath):
+
+    # Loads the data from given SQLite file, it also loads categories.
+
     engine_path = 'sqlite:///' + database_filepath
     engine_read = create_engine(engine_path)
     df = pd.read_sql("SELECT * FROM data", engine_read)
@@ -52,6 +57,9 @@ def load_data(database_filepath):
 
 def tokenize(text):
 
+    # Cleans the text and return tokens to use them in machine learning model.
+
+    
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
 
     detected_urls = re.findall(url_regex, text)
@@ -88,6 +96,9 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         return pd.DataFrame(X_tagged)
 
 def build_model():
+
+    # Builds the machine learning model using a piepline, and finds the best parameters using GridSearchCV.
+
     pipeline = Pipeline([
         ('features', FeatureUnion([
 
